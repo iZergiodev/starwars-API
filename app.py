@@ -1,6 +1,5 @@
-from flask import Flask, jsonify
-from extension import db
-from models import Planet, People, User, Favorite
+from flask import Flask, jsonify, request, render_template
+from models import db, User, Planet, People, Favorite
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///starwars.db'
@@ -10,7 +9,6 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
-
 
 @app.route('/people', methods=['GET'])
 def get_all_people():
@@ -66,61 +64,61 @@ def get_all_users():
 
 
 @app.route('/users/favorites', methods=['GET'])
-def get_user_favorites():
-
-    current_user_id = 1
-    favorites = Favorite.query.filter_by(user_id=current_user_id).all()
-    favorite_list = []
-    for fav in favorites:
-        if fav.planet_id:
-            planet = Planet.query.get(fav.planet_id)
-            favorite_list.append({"type": "planet", "id": planet.id, "name": planet.name})
-        elif fav.people_id:
-            person = People.query.get(fav.people_id)
-            favorite_list.append({"type": "people", "id": person.id, "name": person.name})
-
-    return jsonify(favorite_list), 200
+def list_favorites():
+    user = User.query.get(1)
+    if user:
+        favorites = Favorite.query.filter_by(user_id=user.id).all()
+        return jsonify([{'id': favorite.id, 'planet_id': favorite.planet_id, 'people_id': favorite.people_id} for favorite in favorites])
+    return jsonify({'error': 'User not found'}), 404
 
 
 @app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
 def add_favorite_planet(planet_id):
-    current_user_id = 1
-    favorite = Favorite(user_id=current_user_id, planet_id=planet_id)
-    db.session.add(favorite)
-    db.session.commit()
-
-    return jsonify({"message": "Planet added to favorites"}),201
+    user = User.query.get(1)
+    if user:
+        favorite = Favorite(user_id=user.id, planet_id=planet_id)
+        db.session.add(favorite)
+        db.session.commit()
+        return jsonify({'message': 'Planet added to favorites'}), 201
+    return jsonify({'error': 'User not found'}), 404
 
 
 @app.route('/favorite/people/<int:people_id>', methods=['POST'])
 def add_favorite_people(people_id):
-    current_user_id = 1 
-    favorite = Favorite(user_id=current_user_id, people_id=people_id)
-    db.session.add(favorite)
-    db.session.commit()
-    
-    return jsonify({"message": "Person added to favorites"}),201
+    user = User.query.get(1)
+    if user:
+        favorite = Favorite(user_id=user.id, people_id=people_id)
+        db.session.add(favorite)
+        db.session.commit()
+        return jsonify({'message': 'People added to favorites'}), 201
+    return jsonify({'error': 'User not found'}), 404
 
 
 @app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
 def delete_favorite_planet(planet_id):
-    current_user_id = 1  
-    favorite = Favorite.query.filter_by(user_id=current_user_id, planet_id=planet_id).first()
-    if favorite:
-        db.session.delete(favorite)
-        db.session.commit()
-        return jsonify({"message": "Planet removed from favorites"}), 200
-    else:
-        return jsonify({"error": "Favorite not found"}), 404
+    user = User.query.get(1)
+    if user:
+        favorite = Favorite.query.filter_by(user_id=user.id, planet_id=planet_id).first()
+        if favorite:
+            db.session.delete(favorite)
+            db.session.commit()
+            return jsonify({'message': 'Planet removed from favorites'}), 200
+        return jsonify({'error': 'Favorite not found'}), 404
+    return jsonify({'error': 'User not found'}), 404
 
 
 @app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
 def delete_favorite_people(people_id):
-    current_user_id = 1 
-    favorite = Favorite.query.filter_by(user_id=current_user_id, people_id=people_id).first()
-    if favorite:
-        db.session.delete(favorite)
-        db.session.commit()
-        return jsonify({"message": " Person removed from favorites"}), 200
-    else:
-        return jsonify({"error": "Favorite not found"}),404
+    user = User.query.get(1)
+    if user:
+        favorite = Favorite.query.filter_by(user_id=user.id, people_id=people_id).first()
+        if favorite:
+            db.session.delete(favorite)
+            db.session.commit()
+            return jsonify({'message': 'People removed from favorites'}), 200
+        return jsonify({'error': 'Favorite not found'}), 404
+    return jsonify({'error': 'User not found'}), 404
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

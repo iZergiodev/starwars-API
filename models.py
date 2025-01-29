@@ -1,31 +1,23 @@
-from extension import db
+from flask_sqlalchemy import SQLAlchemy
 
-
-
-class People(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    height = db.Column(db.Integer)
-    mass = db.Column(db.Integer)
-    hair_color = db.Column(db.String(50))
-    skin_color = db.Column(db.String(50))
-    eye_color = db.Column(db.String(50))
-    birth_year = db.Column(db.String(20))
-    gender = db.Column(db.String(20))
-    favorites = db.relationship('Favorite', backref='people')
-
-class Planet(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    climate = db.Column(db.String(100))
-    terrain = db.Column(db.String(100))
-    population = db.Column(db.Integer)
-    favorites = db.relationship('Favorite', backref='planet')
+db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False, unique=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
     favorites = db.relationship('Favorite', backref='user', lazy=True)
+
+class Planet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    climate = db.Column(db.String(120))
+    population = db.Column(db.String(120))
+
+class People(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    height = db.Column(db.String(120))
+    mass = db.Column(db.String(120))
 
 class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
