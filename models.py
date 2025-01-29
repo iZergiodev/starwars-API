@@ -12,6 +12,7 @@ class People(db.Model):
     eye_color = db.Column(db.String(50))
     birth_year = db.Column(db.String(20))
     gender = db.Column(db.String(20))
+    favorites = db.relationship('Favorite', backref='people')
 
 class Planet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -19,6 +20,7 @@ class Planet(db.Model):
     climate = db.Column(db.String(100))
     terrain = db.Column(db.String(100))
     population = db.Column(db.Integer)
+    favorites = db.relationship('Favorite', backref='planet')
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
